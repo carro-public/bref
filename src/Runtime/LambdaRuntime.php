@@ -45,6 +45,9 @@ final class LambdaRuntime
     /** @var string */
     private $layer;
 
+    /** @var boolean */
+    public $shouldRestart = false;
+
     public static function fromEnvironmentVariable(string $layer): self
     {
         return new self((string) getenv('AWS_LAMBDA_RUNTIME_API'), $layer);
@@ -91,6 +94,11 @@ final class LambdaRuntime
             $result = $this->invoker->invoke($handler, $event, $context);
 
             $this->sendResponse($context->getAwsRequestId(), $result);
+
+            # Force the Lambda Runtime to Exit and Restart in Next Invocation
+            if (isset($result['headers']['X-Should-Restart']) && $result['headers']['X-Should-Restart'] === true) {
+                $this->shouldRestart = true;
+            }
         } catch (\Throwable $e) {
             $this->signalFailure($context->getAwsRequestId(), $e);
 

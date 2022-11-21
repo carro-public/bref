@@ -53,4 +53,8 @@ try {
 
 while (true) {
     $lambdaRuntime->processNextEvent($phpFpm);
+
+    if ($lambdaRuntime->shouldRestart) {
+        exit(1);
+    }
 }
