@@ -96,7 +96,7 @@ final class LambdaRuntime
             $this->sendResponse($context->getAwsRequestId(), $result);
 
             # Force the Lambda Runtime to Exit and Restart in Next Invocation
-            if (isset($result['headers']['X-Should-Restart']) && $result['headers']['X-Should-Restart'] === true) {
+            if (isset($result['headers']['X-Should-Restart']) && boolval($result['headers']['X-Should-Restart']) === true) {
                 $this->shouldRestart = true;
             }
         } catch (\Throwable $e) {
