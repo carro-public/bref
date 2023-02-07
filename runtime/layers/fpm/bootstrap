@@ -51,10 +51,16 @@ try {
     $lambdaRuntime->failInitialization('Error while starting PHP-FPM', $e);
 }
 
+$loopMax = getenv('BREF_LOOP_MAX') ?: 500;
+$loops = 0;
 while (true) {
-    $lambdaRuntime->processNextEvent($phpFpm);
-
-    if ($lambdaRuntime->shouldRestart) {
-        exit(1);
+    if (++$loops > $loopMax) {
+        exit(0);
+    }
+    $success = $lambdaRuntime->processNextEvent($phpFpm);
+    // In case the execution failed, we force starting a new process regardless of BREF_LOOP_MAX
+    // Why: an exception could have left the application in a non-clean state, this is preventive
+    if (! $success) {
+        exit(0);
     }
 }
